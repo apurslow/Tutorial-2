@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include "counter.h"
 #include "primes.h"
-#define OUTPUT 1
+#define OUTPUT 0
 
 counter_t primessearch;
 counter_t primescnt;
@@ -98,7 +98,7 @@ void * generatePrimes(int threadid)
 
 int main (int argc, char * argv[])
 {
-  pthread_t p1, p2, p3, p4, p5, p6, p7, p8;
+  pthread_t p1, p2, p3, p4;
   init_counter(&primessearch);
   init_counter(&primescnt);
   //initialize done lock and done condition variable
@@ -112,10 +112,10 @@ int main (int argc, char * argv[])
   pthread_create(&p2, NULL, (void *) generatePrimes, 2);  // CREATE PRIME GENERATOR THREAD 2
   pthread_create(&p3, NULL, (void *) generatePrimes, 3);  // CREATE PRIME GENERATOR THREAD 3
   pthread_create(&p4, NULL, (void *) generatePrimes, 4);  // CREATE PRIME GENERATOR THREAD 4
-  pthread_create(&p5, NULL, (void *) generatePrimes, 5);  // CREATE PRIME GENERATOR THREAD 5
-  pthread_create(&p6, NULL, (void *) generatePrimes, 6);  // CREATE PRIME GENERATOR THREAD 6
-  pthread_create(&p7, NULL, (void *) generatePrimes, 7);  // CREATE PRIME GENERATOR THREAD 7
-  pthread_create(&p8, NULL, (void *) generatePrimes, 8);  // CREATE PRIME GENERATOR THREAD 8
+  // pthread_create(&p5, NULL, (void *) generatePrimes, 5);  // CREATE PRIME GENERATOR THREAD 5
+  // pthread_create(&p6, NULL, (void *) generatePrimes, 6);  // CREATE PRIME GENERATOR THREAD 6
+  // pthread_create(&p7, NULL, (void *) generatePrimes, 7);  // CREATE PRIME GENERATOR THREAD 7
+  // pthread_create(&p8, NULL, (void *) generatePrimes, 8);  // CREATE PRIME GENERATOR THREAD 8
 
   // pthread_join(p1, NULL);
   // pthread_join(p2, NULL);
