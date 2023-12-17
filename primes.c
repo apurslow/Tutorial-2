@@ -26,17 +26,26 @@ int bdone = 0;
 //protects bdone variable 
 pthread_mutex_t donelock;
 //used to signal when prime generation is done
-pthread_cond_t donecond; 
+pthread_cond_t donecond;
+//ensures order of primes printed to screen in order
+pthread_mutex_t orderlock;
 
 
 //finds a prime number
 bool findPrime(int threadid)
 {
+  //acquire order lock
+  pthread_mutex_lock(&orderlock);
+
   int n = inc_counter(&primessearch);
   int halfOfn = n / 2;
+
   for (int i=2; i<=halfOfn; i++)
     if (n % i == 0)
     {
+      //release order lock if not prime
+      pthread_mutex_unlock(&orderlock);
+
       return false;
     }
 //acquire done lock
@@ -72,8 +81,11 @@ if (bdone==0)
         case 8:
           printf("\033[1;34m%d,",n);
       }
-}
+
 #endif
+}
+//release order lock
+pthread_mutex_unlock(&orderlock);
 
  //check if incrementing primescnt will reach genprimes 
 if (inc_counter(&primescnt) == genprimes)
@@ -98,6 +110,8 @@ void * generatePrimes(int threadid)
 
 int main (int argc, char * argv[])
 {
+  //initialize order lock
+  pthread_mutex_init(&orderlock,NULL);
   pthread_t p1, p2, p3, p4;
   init_counter(&primessearch);
   init_counter(&primescnt);
