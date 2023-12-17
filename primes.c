@@ -21,6 +21,15 @@ counter_t primessearch;
 counter_t primescnt;
 int genprimes = 1000;
 
+// 
+int bdone = 0;
+//protects bdone variable 
+pthread_mutex_t donelock;
+//used to signal when prime generation is done
+pthread_cond_t donecond; 
+
+
+//finds a prime number
 bool findPrime(int threadid)
 {
   int n = inc_counter(&primessearch);
@@ -30,6 +39,10 @@ bool findPrime(int threadid)
     {
       return false;
     }
+//acquire done lock
+pthread_mutex_lock(&donelock);
+if (bdone==0)
+{
 
 #if OUTPUT
 
@@ -59,9 +72,18 @@ bool findPrime(int threadid)
         case 8:
           printf("\033[1;34m%d,",n);
       }
-
+}
 #endif
-  inc_counter(&primescnt);
+
+ //check if incrementing primescnt will reach genprimes 
+if (inc_counter(&primescnt) == genprimes)
+{
+//if so set bdone to 1 and signal donecond
+bdone=1;
+pthread_cond_signal(&donecond);
+}
+//release done lock
+pthread_mutex_unlock(&donelock);
   return true;
 }
 
@@ -79,6 +101,9 @@ int main (int argc, char * argv[])
   pthread_t p1, p2, p3, p4, p5, p6, p7, p8;
   init_counter(&primessearch);
   init_counter(&primescnt);
+  //initialize done lock and done condition variable
+  pthread_mutex_init(&donelock,NULL);
+  pthread_cond_init(&donecond,NULL);
 
   if (argc == 2)
     genprimes = atoi(argv[1]);
@@ -92,14 +117,19 @@ int main (int argc, char * argv[])
   pthread_create(&p7, NULL, (void *) generatePrimes, 7);  // CREATE PRIME GENERATOR THREAD 7
   pthread_create(&p8, NULL, (void *) generatePrimes, 8);  // CREATE PRIME GENERATOR THREAD 8
 
-  pthread_join(p1, NULL);
-  pthread_join(p2, NULL);
-  pthread_join(p3, NULL);
-  pthread_join(p4, NULL);
-  pthread_join(p5, NULL);
-  pthread_join(p6, NULL);
-  pthread_join(p7, NULL);
-  pthread_join(p8, NULL);
+  // pthread_join(p1, NULL);
+  // pthread_join(p2, NULL);
+  // pthread_join(p3, NULL);
+  // pthread_join(p4, NULL);
+  // pthread_join(p5, NULL);
+  // pthread_join(p6, NULL);
+  // pthread_join(p7, NULL);
+  // pthread_join(p8, NULL);
+
+  //Wait for any threads to signal donecond
+  pthread_mutex_lock(&donelock);
+  while (bdone==0)
+  pthread_cond_wait(&donecond, &donelock);
 
   printf("\b \n");
 
